@@ -1,58 +1,31 @@
-import 'package:chatapp/pages/forgotpassword.dart';
-import 'package:chatapp/pages/home.dart';
-import 'package:chatapp/service/database.dart';
-import 'package:chatapp/service/shared_pref.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:chatapp/pages/signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class SignIn extends StatefulWidget {
-  const SignIn({super.key});
+class ForgotPassword extends StatefulWidget {
+  const ForgotPassword({super.key});
 
   @override
-  State<SignIn> createState() => _SignInState();
+  State<ForgotPassword> createState() => _ForgotPasswordState();
 }
 
-class _SignInState extends State<SignIn> {
-  String email = "", password = "",name="",pic="",username="",id="";
-  TextEditingController emailController = new TextEditingController();
-  TextEditingController passwordController = new TextEditingController();
+class _ForgotPasswordState extends State<ForgotPassword> {
 
-  final _formkey = GlobalKey<FormState>();
 
-  userLogin() async {
-    try {
-      await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password);
-      QuerySnapshot querySnapshot=await DatabaseMethods().getUserbyEmail(email);
+  String email="";
 
-      name="${querySnapshot.docs[0]["Name"]}";
-      username="${querySnapshot.docs[0]["username"]}";
-      id=querySnapshot.docs[0].id;
-      pic="${querySnapshot.docs[0]["Photo"]}";
+  TextEditingController emailController=TextEditingController();
 
-      await SharedPreferencesHelper().saveUserDisplayName(name);
-      await SharedPreferencesHelper().saveUserId(id);
-      await SharedPreferencesHelper().saveUserName(username);
-      await SharedPreferencesHelper().saveUserPic(pic);
+  final _formkey=GlobalKey<FormState>();
 
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => Home()));
-    } on FirebaseAuthException catch (e) {
-      if (e.code == "user_not_found") {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            backgroundColor: Colors.orangeAccent,
-            content: Text(
-              "No user found with given email",
-              style: TextStyle(fontSize: 18.0, color: Colors.black),
-            )));
-      } else if (e.code == "wrong-password") {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            backgroundColor: Colors.orangeAccent,
-            content: Text(
-              "Incorrect password entered",
-              style: TextStyle(fontSize: 18.0, color: Colors.black),
-            )));
+  resetPassword()async{
+    try{
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password reset email has been sent',style: TextStyle(fontSize: 18.0),)));
+    }
+    on FirebaseAuthException catch(e){
+      if(e.code=='user-not-found'){
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No User Found for the given email',style: TextStyle(fontSize: 18.0),)));
       }
     }
   }
@@ -82,7 +55,7 @@ class _SignInState extends State<SignIn> {
                   padding: EdgeInsets.only(top: 30.0),
                   child: Center(
                       child: Text(
-                    "SignIn",
+                    "Forgot Password",
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 25.0,
@@ -91,7 +64,7 @@ class _SignInState extends State<SignIn> {
                 ),
                 const Center(
                     child: Text(
-                  "Login to your account",
+                  "Enter Your Email",
                   style: TextStyle(
                       color: Color.fromARGB(255, 37, 30, 30),
                       fontSize: 20.0,
@@ -146,54 +119,6 @@ class _SignInState extends State<SignIn> {
                           const SizedBox(
                             height: 20.0,
                           ),
-                          const Text(
-                            "Password",
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 18.0,
-                                fontWeight: FontWeight.w500),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          Container(
-                            padding: const EdgeInsets.only(left: 10),
-                            decoration: BoxDecoration(
-                                border: Border.all(
-                                    width: 1.0, color: Colors.black38),
-                                borderRadius: BorderRadius.circular(10.0)),
-                            child: TextFormField(
-                              controller: passwordController,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return "Please enter password";
-                                }
-                                return null;
-                              },
-                              decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  hintText: "strong_password",
-                                  prefixIcon: Icon(Icons.password)),
-                              obscureText: true,
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          GestureDetector(
-                            onTap: () => Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => ForgotPassword())),
-                            child: Container(
-                              alignment: Alignment.bottomRight,
-                              child: const Text(
-                                "Forgot Password?",
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.w500),
-                              ),
-                            ),
-                          ),
                           const SizedBox(
                             height: 30,
                           ),
@@ -202,10 +127,10 @@ class _SignInState extends State<SignIn> {
                               if(_formkey.currentState!.validate()){
                                 setState(() {
                                   email=emailController.text;
-                                  password=passwordController.text;
                                 });
+                                Navigator.push(context, MaterialPageRoute(builder: (context)=> SignUp()));
                               }
-                              userLogin();
+                              resetPassword();
                             },
                             child: Material(
                               borderRadius: BorderRadius.circular(10),
@@ -218,7 +143,7 @@ class _SignInState extends State<SignIn> {
                                   color: const Color(0xFF6380fb),
                                 ),
                                 child: const Text(
-                                  "SignIn",
+                                  "Recover Password",
                                   style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 18.0,

@@ -29,11 +29,15 @@ class _SignUpState extends State<SignUp> {
             .createUserWithEmailAndPassword(email: email1, password: password1);
 
         String id = randomAlphaNumeric(10);
+        String user = emailController.text.replaceAll("@gmail.com", "");
+        String updatedUsername= user.replaceFirst(user[0], user[0].toUpperCase());
+        String firstLetter= user.substring(0,1).toUpperCase();
 
         Map<String, dynamic> userInfoMap = {
           "Name": nameController.text.toString(),
           "Email": emailController.text.toString(),
-          "username": emailController.text.replaceAll("@gmail.com", ""),
+          "username": updatedUsername,
+          "SearchKey": firstLetter,
           "Photo":
               "https://firebasestorage.googleapis.com/v0/b/barberapp-ebcc1.appspot.com/o/icon1.png?alt=media&token=0fad24a5-a01b-4d67-b4a0-676fbc75b34a",
           "Id": id
