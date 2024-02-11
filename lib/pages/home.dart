@@ -1,5 +1,6 @@
 import 'package:chatapp/pages/chatpage.dart';
 import 'package:chatapp/service/database.dart';
+import 'package:chatapp/service/shared_pref.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -11,13 +12,53 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+
+
+  @override
+  void initState() {
+    onLoad();
+    super.initState();
+  }
+
+  
+
   bool search = false;
+  String? myName,myProfilePic,myUsername,myEmail;
+  
+
+  gettheSharedPreference()async{
+    myName=await SharedPreferencesHelper().getUserDisplayName();
+    myProfilePic=await SharedPreferencesHelper().getUserPic();
+    myUsername=await SharedPreferencesHelper().getUserName();
+    myEmail=await SharedPreferencesHelper().getUserMail();
+    setState(() {
+      
+    });
+  }
+
+  onLoad() async {
+    gettheSharedPreference();
+    setState(() {
+      
+    });
+  }
+
+  
+
+  getChatRoomIdbyUsername(String a,String b){
+    if(a.substring(0,1).codeUnitAt(0)>b.substring(0,1).codeUnitAt(0)){
+      return "$b\_$a";
+    }
+    else{
+      return "$a\_$b";
+    }
+  }
 
   var queryResultSet = [];
   var tempSearchStore = [];
 
   initiateSearch(String value) {
-    if (value.isEmpty) {
+    if (value.length == 0) {
       setState(() {
         queryResultSet = [];
         tempSearchStore = [];
@@ -122,7 +163,7 @@ class _HomeState extends State<Home> {
                         topRight: Radius.circular(20.0))),
                 height: search
                     ? MediaQuery.of(context).size.height / 1.19
-                    : MediaQuery.of(context).size.height / 1.15,
+                    : MediaQuery.of(context).size.height / 1.17,
                 width: MediaQuery.of(context).size.width,
                 child: Column(children: [
                   search
@@ -132,16 +173,15 @@ class _HomeState extends State<Home> {
                           shrinkWrap: true,
                           children: tempSearchStore.map((e) {
                             return buildResultCard(e);
-                          }).toList(),
-                        )
+                          }).toList())
                       : Column(
                           children: [
                             GestureDetector(
                               onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => ChatPage()));
+                                // Navigator.push(
+                                //     context,
+                                //     MaterialPageRoute(
+                                //         builder: (context) => ChatPage(name: data['Name'], profilePic: '', username: '',)));
                               },
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,10 +227,10 @@ class _HomeState extends State<Home> {
                             ),
                             GestureDetector(
                               onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => ChatPage()));
+                                // Navigator.push(
+                                //     context,
+                                //     MaterialPageRoute(
+                                //         builder: (context) => ChatPage()));
                               },
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,10 +276,10 @@ class _HomeState extends State<Home> {
                             ),
                             GestureDetector(
                               onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => ChatPage()));
+                                // Navigator.push(
+                                //     context,
+                                //     MaterialPageRoute(
+                                //         builder: (context) => ChatPage(name: data['Name'], profilePic: data['Photo'], username: data['username'])));
                               },
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -336,26 +376,64 @@ class _HomeState extends State<Home> {
   }
 
   Widget buildResultCard(data) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 8.0),
-      child: Material(
-        elevation: 5.0,
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          padding: EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(data["username"],style: TextStyle(),)
-                ],
-              )
-            ],
+    return GestureDetector(
+      onTap: () async {
+        search=false;
+        setState(() {
+          
+        });
+        var chatRoomId=getChatRoomIdbyUsername(myUsername!, data['username']);
+        Map<String,dynamic>chatRoomInfoMap={
+          "users": [myUsername,data['username']],
+        };
+        await DatabaseMethods().createChatRoom(chatRoomId, chatRoomInfoMap);
+        Navigator.push(context, MaterialPageRoute(builder: (context)=> ChatPage(name: data['Name'], profilePic: data['Photo'], username: data['username'])));
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: 8.0),
+        child: Material(
+          elevation: 5.0,
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            padding: EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.network(
+                    data['Photo'],
+                    height: 70,
+                    width: 70,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      data["Name"],
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
+                    ),
+                    SizedBox(
+                      height: 10.0,
+                    ),
+                    Text(
+                      data["username"],
+                      style:
+                          TextStyle(fontWeight: FontWeight.w500, fontSize: 15.0),
+                    )
+                  ],
+                )
+              ],
+            ),
           ),
         ),
       ),

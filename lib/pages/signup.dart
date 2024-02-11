@@ -36,7 +36,7 @@ class _SignUpState extends State<SignUp> {
         Map<String, dynamic> userInfoMap = {
           "Name": nameController.text.toString(),
           "Email": emailController.text.toString(),
-          "username": updatedUsername,
+          "username": updatedUsername.toUpperCase(),
           "SearchKey": firstLetter,
           "Photo":
               "https://firebasestorage.googleapis.com/v0/b/barberapp-ebcc1.appspot.com/o/icon1.png?alt=media&token=0fad24a5-a01b-4d67-b4a0-676fbc75b34a",

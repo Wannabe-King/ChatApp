@@ -1,13 +1,93 @@
+import 'package:chatapp/service/database.dart';
+import 'package:chatapp/service/shared_pref.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:random_string/random_string.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({super.key});
+  String name,profilePic,username;
+
+  ChatPage({ required this.name,required this.profilePic,required this.username,super.key});
+  
 
   @override
   State<ChatPage> createState() => _ChatPageState();
 }
 
 class _ChatPageState extends State<ChatPage> {
+
+
+  @override
+  void initState() {
+    onLoad();
+    super.initState();
+  }
+
+  TextEditingController messageController=TextEditingController();
+  String? myName,myProfilePic,myUsername,myEmail,messageId,chatRoomId;
+  
+
+  gettheSharedPreference()async{
+    myName=await SharedPreferencesHelper().getUserDisplayName();
+    myProfilePic=await SharedPreferencesHelper().getUserPic();
+    myUsername=await SharedPreferencesHelper().getUserName();
+    myEmail=await SharedPreferencesHelper().getUserMail();
+    chatRoomId=getChatRoomIdbyUsername(widget.username,myUsername!);
+    setState(() {
+      
+    });
+  }
+
+  onLoad() async {
+    gettheSharedPreference();
+    setState(() {
+      
+    });
+  }
+
+  getChatRoomIdbyUsername(String a,String b){
+    if(a.substring(0,1).codeUnitAt(0)>b.substring(0,1).codeUnitAt(0)){
+      return "$b\_$a";
+    }
+    else{
+      return "$a\_$b";
+    }
+  }
+  
+
+  sendMessage(bool sendClicked){
+    DateTime now=DateTime.now();
+    String formattedDate=DateFormat('h:mma').format(now);
+    if(messageController.text!=""){
+      String message=messageController.text;
+      messageController.text="";
+      Map<String,dynamic> messageInfoMap={
+        "message": message,
+        "sentBy" : myUsername,
+        "ts": formattedDate,
+        "time": FieldValue.serverTimestamp(),
+        "imgUrl": myProfilePic,
+      };
+      messageId ??= randomAlphaNumeric(10);
+
+      DatabaseMethods().addMessage(chatRoomId!, messageId!, messageInfoMap).then((value) { Map<String,dynamic> lastMessageInfoMap={
+        "lastMessage": message,
+        "lastMessageSentTs": formattedDate,
+        "time": FieldValue.serverTimestamp(),
+        "lastMessageSendBy":myUsername,
+      };
+      DatabaseMethods().updateLastMessageSent(chatRoomId!, lastMessageInfoMap);
+      if(sendClicked){
+        messageId=null;
+      }
+      }
+      );
+
+      
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,6 +187,7 @@ class _ChatPageState extends State<ChatPage> {
                           children: [
                             Expanded(
                               child: TextField(
+                                controller: messageController,
                                 decoration: InputDecoration(
                                     hintText: "Enter Your Message Here",
                                     hintStyle:
@@ -114,14 +195,19 @@ class _ChatPageState extends State<ChatPage> {
                                     border: InputBorder.none),
                               ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: Colors.black12),
-                              child: const Icon(
-                                Icons.send,
-                                color: Colors.black38,
+                            GestureDetector(
+                              onTap: (){
+                                sendMessage(true);
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20),
+                                    color: Colors.black12),
+                                child: const Icon(
+                                  Icons.send,
+                                  color: Colors.black38,
+                                ),
                               ),
                             )
                           ],
