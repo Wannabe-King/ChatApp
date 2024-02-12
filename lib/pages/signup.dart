@@ -1,4 +1,5 @@
 import 'package:chatapp/pages/home.dart';
+import 'package:chatapp/pages/signin.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:chatapp/service/database.dart';
 import 'package:chatapp/service/shared_pref.dart';
@@ -44,15 +45,16 @@ class _SignUpState extends State<SignUp> {
         };
         await DatabaseMethods().addUserDetails(userInfoMap, id);
         await SharedPreferencesHelper().saveUserId(id);
-        await SharedPreferencesHelper().saveUserDisplayName(
-            emailController.text.replaceAll("@gmail.com", ""));
-        await SharedPreferencesHelper().saveUserName(nameController.text);
+        await SharedPreferencesHelper().saveUserDisplayName(nameController.text
+            );
+        await SharedPreferencesHelper().saveUserName(emailController.text.replaceAll("@gmail.com", "").toUpperCase());
         await SharedPreferencesHelper().saveUserMail(emailController.text);
         await SharedPreferencesHelper().saveUserPic(
             "https://firebasestorage.googleapis.com/v0/b/barberapp-ebcc1.appspot.com/o/icon1.png?alt=media&token=0fad24a5-a01b-4d67-b4a0-676fbc75b34a");
 
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Registered Successfully')));
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>Home()));
       } on FirebaseAuthException catch (e) {
         if (e.code == 'weak-password') {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -259,20 +261,25 @@ class _SignUpState extends State<SignUp> {
                             const SizedBox(
                               height: 30,
                             ),
-                            const Row(
+                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
+                                const Text(
                                   "Already have an account? ",
                                   style: TextStyle(
                                       fontSize: 16.0, color: Colors.black),
                                 ),
-                                Text(
-                                  "Login",
-                                  style: TextStyle(
-                                      fontSize: 16.0,
-                                      color: Color(0xFF7f30fe),
-                                      fontWeight: FontWeight.w500),
+                                GestureDetector(
+                                  onTap: (){
+                                    Navigator.push(context,MaterialPageRoute(builder: (context)=>SignIn()));
+                                  },
+                                  child: const Text(
+                                    "Login",
+                                    style: TextStyle(
+                                        fontSize: 16.0,
+                                        color: Color(0xFF7f30fe),
+                                        fontWeight: FontWeight.w500),
+                                  ),
                                 )
                               ],
                             )

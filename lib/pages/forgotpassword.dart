@@ -157,19 +157,24 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                     ),
                   ),
                 ),
-                const Row(
+                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    const Text(
                       "Don't have an account? ",
                       style: TextStyle(fontSize: 16.0, color: Colors.black),
                     ),
-                    Text(
-                      "Sign Up Now! ",
-                      style: TextStyle(
-                          fontSize: 16.0,
-                          color: Color(0xFF7f30fe),
-                          fontWeight: FontWeight.w500),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=>SignUp()));
+                      },
+                      child: const Text(
+                        "Sign Up Now! ",
+                        style: TextStyle(
+                            fontSize: 16.0,
+                            color: Color(0xFF7f30fe),
+                            fontWeight: FontWeight.w500),
+                      ),
                     )
                   ],
                 )
